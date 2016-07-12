@@ -1,0 +1,20 @@
+---
+# Include variables and define needed variables.
+- name: Include OS-specific variables.
+  include_vars: "{{ ansible_os_family }}.yml"
+
+- include: setup-Debian.yml
+  when: ansible_os_family == 'Debian'
+
+# Configure Memcached.
+- name: Copy beanstalkd defaults.
+  template:
+    src: beanstalkd-{{ ansible_os_family }}.j2
+    dest: "{{ beanstalkd_defaults_file }}"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart beanstalkd
+
+- name: Ensure beanstalkd is started and set to run on startup.
+  service: name=beanstalkd state=started enabled=yes
